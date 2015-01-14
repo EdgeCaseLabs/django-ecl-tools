@@ -8,7 +8,8 @@ from django.core.management.base import BaseCommand, CommandError
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from utils.management.commands.backupdb import get_backup_settings, add_path, format_key_filter
+
+from .backupdb import get_backup_settings, add_path, format_key_filter
 
 
 def do_sync(s, s3key, skip_download):
