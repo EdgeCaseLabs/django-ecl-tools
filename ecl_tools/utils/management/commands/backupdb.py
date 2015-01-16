@@ -1,9 +1,8 @@
 import os
 import datetime
 import subprocess
-import logging
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from boto.s3.connection import S3Connection
@@ -106,7 +105,9 @@ class Command(BaseCommand):
 
         sts = subprocess.call("export PGPASSWORD=%s && pg_dump -U %s -h %s %s > %s && export PGPASSWORD=" % (
         s['password'].replace('$', '\\$').replace('&', '\\&').replace('(', '\\('), s['user'], s['host'], s['dbname'], s['tmp_file']()), shell=True)
+        if sts: raise Exception('backupdb::pg_dump failed with error code %s' % sts)
         sts = subprocess.call("gzip -9 %s" % s['tmp_file'](), shell=True)
+        if sts: raise Exception('backupdb::gzip failed with error code %s' % sts)
 
         conn = S3Connection(s['AWS_ACCESS_KEY_ID'], s['AWS_SECRET_ACCESS_KEY'])
         bucket = conn.get_bucket(s['BACKUP_BUCKET_NAME'])
@@ -120,3 +121,43 @@ class Command(BaseCommand):
         # except Exception, e:
         #   #logger.exception(e)
         #   raise
+
+
+def has_backup_run(day=None):
+    if not day:
+        day = datetime.date.today()
+    settings_prefix = 'sync'
+
+    s = get_backup_settings(settings_prefix)
+
+    download_db_name = s['dbname']
+
+    conn = S3Connection(s['AWS_ACCESS_KEY_ID'], s['AWS_SECRET_ACCESS_KEY'])
+    bucket = conn.get_bucket(s['BACKUP_BUCKET_NAME'])
+
+    while 1:
+        prefix = add_path(s, format_key_filter(download_db_name, day))
+        print "Searching for backup at %s" % prefix
+        keys = sorted(bucket.list(prefix), key=lambda k: k.last_modified)
+        if len(keys) > 0:
+            print "Found backup '%s'." % keys[-1]
+            return True
+        else:
+            return False
+
+
+
+def backup_status():
+    if not has_backup_run():
+        return ['Backup not found for today.']
+
+    return []
+
+
+
+if __name__ == "__main__":
+    import sys
+    import settings
+
+    c = Command()
+    c.handle(*sys.argv)

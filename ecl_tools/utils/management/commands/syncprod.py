@@ -1,13 +1,10 @@
-import os
 import subprocess
 import datetime
 
 import django.db
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
 
 from boto.s3.connection import S3Connection
-from boto.s3.key import Key
 
 from .backupdb import get_backup_settings, add_path, format_key_filter
 
@@ -15,10 +12,10 @@ from .backupdb import get_backup_settings, add_path, format_key_filter
 def do_sync(s, s3key, skip_download):
 
     if not skip_download:
-        print 'Downloading ...'
+        print('Downloading ...')
         s3key.get_contents_to_filename(s['tmp_zip_file']())
 
-        print 'Unzipping ...'
+        print('Unzipping ...')
         try:
             sts = subprocess.check_output("gunzip %s" % s['tmp_zip_file'](), shell=True)
         except subprocess.CalledProcessError, e:
@@ -26,12 +23,18 @@ def do_sync(s, s3key, skip_download):
 
     django.db.close_connection()
 
-    print 'Restoring DB ...'
+    print('Restoring DB ...')
+    print(s3key)
+
     cmds = (
         'dropdb %s' % s['dbname'],
         'createdb %s' % s['dbname'],
         'psql -d %s -f %s' % (s['dbname'], s['tmp_file']())
     )
+
+    use_sudo = ''
+    if getattr(settings, 'SYNCPROD_SUDO', False):
+        use_sudo = "sudo "
 
     for cmd in cmds:
         if s.has_key('user') and s['user']:
@@ -41,7 +44,7 @@ def do_sync(s, s3key, skip_download):
             cmd += ' -h ' + s['host']
 
         try:
-            sts = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            sts = subprocess.check_output(use_sudo + cmd, shell=True, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError, e:
             if not 'ERROR:  database "%s" does not exist' % s['dbname'] in e.output:
                 return False, "'%s' returned %s" % (cmd, e.output)
@@ -83,12 +86,13 @@ class Command(BaseCommand):
 
         while 1:
             prefix = add_path(s, format_key_filter(download_db_name, day))
-
+            print("Searching for backup at %s" % prefix)
             keys = sorted(bucket.list(prefix), key=lambda k: k.last_modified)
             if len(keys) > 0:
+                print("Found backup '%s'. Syncing..." % keys[-1])
                 result, msg = do_sync(s, keys[-1], skip_download)
                 if not result:
-                    print msg
+                    print(msg)
                     #Exit!
                     return
                 else:
@@ -96,6 +100,8 @@ class Command(BaseCommand):
 
             else:
                 if not auto_seek:
-                    print 'No match found for your date'
+                    print('No match found for your date')
                     break
+                print("No match found for %s." % day)
                 day = day - datetime.timedelta(days=1)
+                print("Attempting new match for %s." % day)
