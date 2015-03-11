@@ -3,6 +3,7 @@ import datetime
 
 import django.db
 from django.conf import settings
+from django.core.management.base import BaseCommand
 
 from boto.s3.connection import S3Connection
 

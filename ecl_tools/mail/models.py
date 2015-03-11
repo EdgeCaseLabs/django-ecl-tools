@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ecl_tools.models import BaseModel
+from ecl_tools.utils.models import BaseModel
 
 STATUS_CHOICES = (
     (1, _('active')),
