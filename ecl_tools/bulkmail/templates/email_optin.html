@@ -1,0 +1,31 @@
+<!DOCTYPE html>{% load url from future %}{% load static %}
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <title>Please verify your addess</title>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+    <meta name="HandheldFriendly" content="true">
+  </head>
+  <body>
+    <p>
+      Woohoo! Thanks for signing up for our mailing list{% if optin.bulk_lists.all.count > 0 %}s{% endif %}!
+      <br><br>
+      Click on the link below to verify your email:
+      <br><br>
+      <a href="http://{{ host }}{% url 'bulkmail_signup_verify' %}?email={{ optin.email|urlencode }}&skey={{ optin.skey|urlencode }}">http://{{ host }}{% url 'bulkmail_signup_verify' %}?email={{ optin.email|urlencode }}&skey={{ optin.skey|urlencode }}</a>
+      <br><br>
+      We WILL: make sure to keep you in the loop on events, local news, new listings and more!
+      <br><br>
+      We WON'T: Sell or share your email info. Ever.
+      <br><br>
+      This link will expire in 10 days, so verify soon!
+      <br><br>
+      You signed up for the following:
+      <ul>
+        {% for l in optin.bulk_lists.all %}
+        <li><strong>{{ l.name }}</strong>: {{ l.short_description|striptags }} ({{ l.frequency }})</li>
+        {% endfor %}
+      </ul>
+    </p>
+  </body>
+</html>

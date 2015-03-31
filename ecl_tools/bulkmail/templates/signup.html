@@ -1,0 +1,48 @@
+{% load static %}
+<div class="signup">
+  <p id="mail-title">Houston Newsletter.</p>
+  <div class="form">
+    <form onsubmit="return signup('#email-form');" id="email-form">
+
+      <div class="email">
+        <input type="hidden" name="list1" value="ON" >
+        <input type="text" id="email-field" name="email" value="" placeholder="email address"/>
+        <br>
+        <a href="javascript: void(0)" id="submit-mail-btn" class="btn btn-default" onclick="signup('#email-form')">Signup!</a>
+      </div>
+
+
+      <p class="small-email-txt" >
+        Stay updated on events, listings, and more on our newsletter.  And don't worry, we don't share your email with anyone else.
+      </p>
+      <a href="#" id="no-thanks-mail" class="btn-default btn">No Thanks</a>
+      <a class>
+      
+    </form>
+  </div>
+  <div class="thanks" style="display: none;color:#fff;">
+    Please verify your e-mail by following the link we just sent you.
+  </div>
+</div>
+
+<script>
+function signup (fid) {
+  var data = $(fid).serialize();
+  $.ajax({
+    type: "POST",
+    url: '{% url 'bulkmail_signup' %}',
+    data: data,
+    success: function(data, textStatus, jqXHR){
+      if (data.status == 'error') {
+        alert(data.message);
+      }else {
+        $(fid).closest(".signup .form").hide();
+        $(fid).closest(".signup").find(".thanks").fadeIn('slow')
+      }
+    },
+    dataType: 'json'
+  });
+  
+  return false;
+}    
+</script>

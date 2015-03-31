@@ -1,0 +1,13 @@
+{% extends "email_master.html" %}{% load static %}
+{% block title %}Sample email template!{% endblock %}
+{% block extrahead %}
+    <style type="text/css">
+    body{color: red;}
+    </style>
+{% endblock %}
+{% block content %}
+    <h1>This is a sample template!</h1>
+    <p>
+        You need to make your own by creating your own model which inherits from BaseEmailModel and then setting html_template_name to your template file.
+    </p>
+{% endblock %}

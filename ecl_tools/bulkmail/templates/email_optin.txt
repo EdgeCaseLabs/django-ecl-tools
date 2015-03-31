@@ -1,0 +1,17 @@
+{% load url from future %}
+Woohoo! Thanks for signing up for our mailing list{% if optin.bulk_lists.all.count > 0 %}s{% endif %}!
+	  
+Click on the link below to verify your email:
+
+http://{{ host }}{% url 'bulkmail_signup_verify' %}?email={{ optin.email|urlencode }}&skey={{ optin.skey|urlencode }}
+
+We WILL: make sure to keep you in the loop on events, local news, new listings and more!
+	  
+We WON'T: Sell or share your email info. Ever.
+
+This link will expire in 10 days, so verify soon!
+
+You signed up for the following:
+{% for l in optin.bulk_lists.all %}  > {{ l.name }}: {{ l.short_description|striptags }} ({{ l.frequency }})
+{% endfor %}
+

@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>{% block title %}Welcome to our mailing list!{% endblock %}</title>
+    {% block extrahead %}{% endblock %}
+</head>
+{% block body %}<body>{% endblock %}
+
+{% if preview and not obj.sent %}
+    <div style="margin: 20px 0; text-align: center;">
+      <form action="" method="get">
+        E-Mail: <input type="text" name="email" value="">
+        <input type="hidden" name="send_now" value="test">
+        <input type="submit" value="Send Test">
+      </form>
+    </div>
+{% endif %}
+
+
+{% block content %}{% endblock %}
+
+{% if preview and not obj.sent %}
+    <div style="margin: 20px 0; text-align: center;">
+      <button style="font-size: 150%;" onclick="return send_now()">Send</button>
+    </div>
+    <script type="text/javascript">
+      function send_now () {
+        if (confirm('Are you sure you wish to Send this Email to {{ obj.destination_list.name }}?')) {
+          location.href = '?send_now=1';
+        }
+
+        return false;
+      }
+    </script>
+{% endif %}
+</body>
+</html>
