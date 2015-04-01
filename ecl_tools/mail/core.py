@@ -3,7 +3,7 @@ import re
 
 from django.core.mail import EmailMessage
 from django.conf import settings
-from twilio.rest import TwilioRestClient
+
 from ecl_tools.config.models import GlobalConfig
 from .models import MailMessage, SMSMessage
 
@@ -12,9 +12,7 @@ valid_phone_pattern = re.compile('[^0-9]')
 def make_valid_phone(phone):
     return valid_phone_pattern.sub("", phone).lstrip('1')[:10]
 
-def send_mail(subject, message, from_email, recipient_list,
-              fail_silently=False, auth_user=None, auth_password=None,
-              connection=None):
+def send_mail(subject, message, from_email, recipient_list):
     """
     Queue email in MailMessage model.
     """
@@ -79,6 +77,7 @@ def process_mail_queue():
     count_sms = 0
     for msg in SMSMessage.objects.filter(status=1): #get all active sms in queue
         try:
+            from twilio.rest import TwilioRestClient
             client = TwilioRestClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
             client.messages.create(

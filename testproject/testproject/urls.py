@@ -9,4 +9,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     (r'^bm/', include('ecl_tools.bulkmail.urls')),
+
+    url(r'^admin/newsletters/newsletter/(\d+)/preview/$', 'ecl_tools.bulkmail.views.preview', name='bulkmail_preview'),
+
 )

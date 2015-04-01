@@ -1,7 +1,7 @@
 from django.db import models
-from ecl_tools.bulkmail.models import TrackingEvent, BaseEmailModel
+from ecl_tools.bulkmail.models import TrackingEvent, BaseBulkmailModel
 
-class NewsletterSample(BaseEmailModel):
+class NewsletterSample(BaseBulkmailModel):
     title = models.CharField(max_length=60)
 
     def StatsLink(self):
@@ -22,5 +22,8 @@ class NewsletterSample(BaseEmailModel):
 
 
 class CampaignResolver(object):
+    def get_model(self):
+        return NewsletterSample
+
     def get(self, *args, **kwargs):
         return NewsletterSample.objects.get(id=kwargs['pk'])

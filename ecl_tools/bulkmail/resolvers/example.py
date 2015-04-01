@@ -4,9 +4,9 @@
 ##### Step 1: Create your newsletter model (see example below) and add it to your own project.
 #####
 # from django.db import models
-# from ecl_tools.bulkmail.models import TrackingEvent, BaseEmailModel
+# from ecl_tools.bulkmail.models import TrackingEvent, BaseBulkmailModel
 #
-# class NewsletterSample(BaseEmailModel):
+# class NewsletterSample(BaseBulkmailModel):
 #     title = models.CharField(max_length=60)
 #
 #     def StatsLink(self):
@@ -30,7 +30,7 @@
 class CampaignResolver(object):
 
     def get_model(self):
-        #Return model which is your Newsletter and inherits from BaseEmailModel
+        #Return model which is your Newsletter and inherits from BaseBulkmailModel
         #return NewsletterSample
         raise Exception('Bulkmail improperly configured: You need to add BULKMAIL_CAMPAIGN_RESOLVER to your settings and it must conform to the example in ecl_tools.bulkmail.stats.example')
 

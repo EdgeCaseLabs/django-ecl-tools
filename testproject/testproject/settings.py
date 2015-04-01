@@ -48,6 +48,8 @@ INSTALLED_APPS = (
 
 BULKMAIL_CAMPAIGN_RESOLVER = 'testproject.models'
 
+
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

@@ -18,13 +18,15 @@ class BaseEmail(object):
     html_template_name = 'email_template_sample.html'
     text_template_name = 'email_template_sample.txt'
 
-    def get_list_id(self):
-        return 'list_%d' % (
-            self.destination_list.id)
-
     def get_subject(self):
         raise Exception(
             "Method 'get_subject' not created for class '%s'. Please add it to class." % self.__class__.__name__)
+
+class BaseBulkmail(BaseEmail):
+
+    def get_list_id(self):
+        return 'list_%d' % (
+            self.destination_list.id)
 
 
 class List(models.Model):
@@ -100,7 +102,7 @@ class Subscription(models.Model):
         return self.email
 
 
-class Optin(BaseEmail, models.Model):
+class Optin(BaseBulkmail, models.Model):
     def __init__(self, *args, **kwargs):
         super(Optin, self).__init__(*args, **kwargs)
 
@@ -212,7 +214,7 @@ class TrackingEvent(models.Model):
     ip = models.CharField(max_length=15, null=True, blank=True)
     time = models.DateTimeField(null=True, blank=True)
 
-class BaseEmailModel(BaseEmail, models.Model):
+class BaseBulkmailModel(BaseBulkmail, models.Model):
     sent = models.DateTimeField('Sent/Published', blank=True, null=True)
     scheduled = models.DateTimeField('Scheduled Send On', blank=True, null=True)
     # expires = models.DateTimeField('Site Display Expire')

@@ -2,4 +2,4 @@ Sample email template!
 
 This is a sample text template!
 
-You need to make your own by creating your own model which inherits from BaseEmailModel and then setting text_template_name to your template file.
+You need to make your own by creating your own model which inherits from BaseBulkmailModel and then setting text_template_name to your template file.
