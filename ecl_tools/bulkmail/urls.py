@@ -1,6 +1,6 @@
 from django.conf.urls import *
 
-urlpatterns = patterns('bulkmail.views',
+urlpatterns = patterns('ecl_tools.bulkmail.views',
    
    url(r'^signup$', 'signup', name="bulkmail_signup"),
    url(r'^signup/verify$', 'signup_verify', name="bulkmail_signup_verify"),

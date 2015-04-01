@@ -2,7 +2,7 @@ from django import http
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 
-from .models import List, Subscription, Optin, TrackingEvent
+from models import List, Subscription, Optin, TrackingEvent
 
 
 class SubscribedFilter(SimpleListFilter):

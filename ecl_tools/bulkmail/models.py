@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from django.utils import importlib
 
 
-imp = importlib.import_module(settings.EMAILER)
+imp = importlib.import_module(getattr(settings, "EMAILER", 'ecl_tools.bulkmail.mailers.mailgun'))
 EMailer = imp.EMailer
 
 

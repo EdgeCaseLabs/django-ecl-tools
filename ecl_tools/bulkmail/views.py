@@ -10,12 +10,19 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.utils import importlib
 
-from bulkmail.forms import SignupForm
-from bulkmail.mailers.mailgun import RejectEventResponse
-from .ecl_tools.bulkmail.models import List, Subscription, Optin, TrackingEvent
-from newsletters.models import Newsletter
+from forms import SignupForm
+from mailers.mailgun import RejectEventResponse
+from models import List, Subscription, Optin, TrackingEvent
 
+imp = importlib.import_module(getattr(settings, "BULKMAIL_CAMPAIGN_RESOLVER", 'ecl_tools.bulkmail.stats.example'))
+
+def get_resolver():
+    if not imp or not imp.CampaignResolver:
+        raise Exception('Bulkmail improperly configured: You need to add BULKMAIL_CAMPAIGN_RESOLVER to your settings and it must conform to the example in ecl_tools.bulkmail.stats.example')
+
+    return imp.CampaignResolver()
 
 def verify(key, request):
     try:
@@ -164,14 +171,16 @@ def signup_verify(request):
     return TemplateResponse(request, 'signup_verified.html', c)
 
 
+
+
 @login_required 
 def stats(request, key):
-    newsletter = Newsletter.objects.get(pk=key)
-    c = {
-        'tracking_events': newsletter.stats,
-        'hello': 'hello'
-    }
-    return TemplateResponse(request, 'bulkmail/stats.html', c)
+
+    campaign = get_resolver().get(pk=key)
+    tracking_events = TrackingEvent.objects.filter(campaign=campaign.get_campaign_id()).order_by('time')
+    campaign_id = "Campaign: %s" % campaign.get_campaign_id()
+
+    return TemplateResponse(request, 'stats.html', locals())
 
 
 

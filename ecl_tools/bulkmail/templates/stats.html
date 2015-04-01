@@ -1,0 +1,135 @@
+
+{% extends "admin/base_site.html" %}
+
+{% load staticfiles %}
+{% block content %}
+
+
+<style>
+.data-module {
+  background-color: #f1f1f1;
+  width: 200px;
+  padding: 15px;
+  float: right;
+}
+</style>
+<script>if (!window.jQuery) { document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"><\/script>'); }</script>
+<script type="text/javascript" src="{% static 'bulkmail/js/underscore.js' %}"></script>
+<script type="text/javascript" src="{% static 'bulkmail/js/chart-1.0.2.js' %}"></script>
+
+	
+
+	<h1>Stats Opens & Clicks</h1>
+	<p>{{campaign_id}}</p>
+
+	<div class="data-module"></div>
+    <canvas id="myChart"></canvas>
+
+	<script type="text/javascript">
+
+    (function( $ ) {
+
+     	//build an array of all events
+		var the_tracking_data = [
+		{% for item in tracking_events %}
+	    	{ 
+	    		"event": "{{item.event}}",
+				"campaign": "{{item.campaign}}",
+				"hour": "{{item.time.month}}/{{item.time.day}}/{{item.time.year}} "				
+	    	}, 
+		{% endfor %}
+
+		]
+
+
+		function generateLabels(data){
+			var l = [];
+			for (var key in data) {
+			  if (data.hasOwnProperty(key)) {
+			    l.push(key)
+			  }
+			}
+			return l
+		}
+
+		function generateData(data){
+			var l = [];
+			for (var key in data) {
+			  if (data.hasOwnProperty(key)) {
+			    l.push(data[key].length)
+			  }
+			}
+			return l
+		}
+
+
+		//just replaces missing hours,if any, with 0 so that the data lines up correctly with the labels in the chart
+		function fixOrder(labels, data){
+			//first compare to labels of the whole dataset.
+			// replace missing label values with 0. 
+			//this ensures that in the case that there are opens, but no clicks, all the data is still in line with the labels.
+			var difference = _.difference(labelsAll, labels)
+			_.each(difference, function(val){
+				var indexToChange = _.indexOf(labelsAll, val)
+				 data.splice(indexToChange, 0, 0)
+			});
+
+			return data
+		}
+
+		//groups the clicked and opened events
+		var events = _.groupBy(the_tracking_data, 'event');
+
+		//groups all data by hour
+		var allData = _.groupBy(the_tracking_data, 'hour');
+		//group clicked data by hour
+		var clickedData = _.groupBy(events.clicked, 'hour')
+		console.log(clickedData)
+		//groups opened data by hour
+		var openedData = _.groupBy(events.opened, 'hour')
+
+		//returns array of number of clicks
+		var clicked = generateData(clickedData)
+		//returns array of number of opens
+		var opened = generateData(openedData)
+
+		var labelsAll = generateLabels(allData)
+		var labelsClicked = generateLabels(clickedData)
+		var labelsOpened = generateLabels(openedData)
+
+		var ctx = document.getElementById("myChart").getContext("2d");
+		console.log(the_tracking_data.length)
+		var data = {
+		    labels: labelsAll,
+		    datasets: [
+		        {
+		            label: "Clicks",
+		            fillColor: "rgba(220,220,220,0.2)",
+		            strokeColor: "rgba(220,220,220,1)",
+		            pointColor: "rgba(220,220,220,1)",
+		            pointStrokeColor: "#fff",
+		            pointHighlightFill: "#fff",
+		            pointHighlightStroke: "rgba(220,220,220,1)",
+		            data: fixOrder(labelsClicked, clicked)
+		        },
+		        {
+		            label: "Opens",
+		            fillColor: "rgba(151,187,205,0.2)",
+		            strokeColor: "rgba(151,187,205,1)",
+		            pointColor: "rgba(151,187,205,1)",
+		            pointStrokeColor: "#fff",
+		            pointHighlightFill: "#fff",
+		            pointHighlightStroke: "rgba(151,187,205,1)",
+		            data: fixOrder(labelsOpened, opened)
+		        }
+		    ]
+		};
+
+		var myChart = new Chart(ctx).Line(data, {
+			responsive : true
+        });
+
+        $(".data-module").html(myChart.generateLegend());
+	})(jQuery.noConflict(true));
+	</script>
+{% endblock %}

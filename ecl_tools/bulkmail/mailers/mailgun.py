@@ -3,8 +3,8 @@ import json
 from django.conf import settings
 from django.http import HttpResponse
 
-from .ecl_tools.bulkmail.mailers.base import BaseEmailer
-from bulkmail.tasks import mailgun_send
+from ecl_tools.bulkmail.mailers.base import BaseEmailer
+from ecl_tools.bulkmail.tasks import mailgun_send
 
 
 class RejectEventResponse(HttpResponse):
