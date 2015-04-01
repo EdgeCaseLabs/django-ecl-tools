@@ -2,6 +2,7 @@ import base64
 import random
 import hashlib
 from datetime import datetime
+from django.core.urlresolvers import reverse
 
 from django.db import models
 from django.conf import settings
@@ -242,8 +243,7 @@ class BaseEmailModel(BaseEmail, models.Model):
     # Stats.allow_tags = True
 
     def preview(self, ):
-        return '<a href="/admin/%s/%s/%d/preview/">Preview and Send</a>' % (self.__module__.split('.')[0],
-                                                                            self.__class__.__name__.lower(), self.id)
+        return '<a href="%s">Preview and Send</a>' % (reverse('bulkmail_preview', args=[self.id]))
     
 
     preview.allow_tags = True

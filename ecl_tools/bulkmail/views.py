@@ -5,9 +5,11 @@ import hmac
 
 from django import http
 from django.conf import settings
+from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils import importlib
@@ -16,11 +18,11 @@ from forms import SignupForm
 from mailers.mailgun import RejectEventResponse
 from models import List, Subscription, Optin, TrackingEvent
 
-imp = importlib.import_module(getattr(settings, "BULKMAIL_CAMPAIGN_RESOLVER", 'ecl_tools.bulkmail.stats.example'))
+imp = importlib.import_module(getattr(settings, "BULKMAIL_CAMPAIGN_RESOLVER", 'ecl_tools.bulkmail.resolvers.example'))
 
 def get_resolver():
     if not imp or not imp.CampaignResolver:
-        raise Exception('Bulkmail improperly configured: You need to add BULKMAIL_CAMPAIGN_RESOLVER to your settings and it must conform to the example in ecl_tools.bulkmail.stats.example')
+        raise Exception('Bulkmail improperly configured: You need to add BULKMAIL_CAMPAIGN_RESOLVER to your settings and it must conform to the example in ecl_tools.bulkmail.resolvers.example')
 
     return imp.CampaignResolver()
 
@@ -171,7 +173,36 @@ def signup_verify(request):
     return TemplateResponse(request, 'signup_verified.html', c)
 
 
+@never_cache
+def preview(request, id):
+    kwargs = {
+        'id': id,
+    }
+    obj = get_object_or_404(get_resolver().get_model(), **kwargs)
 
+    # fmat = request.GET.get('format', '')
+    # if fmat == 'txt':
+    #     return http.HttpResponse(n.render(fmat), content_type='text/plain')
+
+    #return http.HttpResponse(n.render(preview=True, format='html'))
+
+
+    send = request.REQUEST.get('send_now', '')
+    if send == '1' or send == 'test':
+
+        if send == 'test':
+            email = request.REQUEST.get('email')
+            emails = email.split(',')
+            obj.send_bulkmail(emails=emails)
+            messages.success(request, 'Test Alert Sent Successfully')
+
+        else:
+            obj.send_bulkmail()
+            messages.success(request, 'Alert Sent Successfully')
+
+        return http.HttpResponseRedirect('../../')
+
+    return http.HttpResponse(obj.render(preview=True, test=True))
 
 @login_required 
 def stats(request, key):

@@ -29,6 +29,11 @@
 
 class CampaignResolver(object):
 
+    def get_model(self):
+        #Return model which is your Newsletter and inherits from BaseEmailModel
+        #return NewsletterSample
+        raise Exception('Bulkmail improperly configured: You need to add BULKMAIL_CAMPAIGN_RESOLVER to your settings and it must conform to the example in ecl_tools.bulkmail.stats.example')
+
     def get(self, *args, **kwargs):
 
         #Return object for which we wish to retrieve stats.
