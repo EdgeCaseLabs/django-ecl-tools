@@ -24,7 +24,7 @@
 #             self.id)
 
 #####
-##### Step 2: Create your own StatsResolver which returns the model associated with a particular campaign.
+##### Step 2: Create your own CampaignResolver which returns the model associated with a particular campaign.
 #####
 
 class CampaignResolver(object):

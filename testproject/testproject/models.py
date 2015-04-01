@@ -21,6 +21,6 @@ class NewsletterSample(BaseEmailModel):
 
 
 
-class StatsResolver(object):
+class CampaignResolver(object):
     def get(self, *args, **kwargs):
         return NewsletterSample.objects.get(id=kwargs['pk'])
