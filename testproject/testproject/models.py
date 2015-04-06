@@ -3,6 +3,7 @@ from ecl_tools.bulkmail.models import TrackingEvent, BaseBulkmailModel
 
 class NewsletterSample(BaseBulkmailModel):
     title = models.CharField(max_length=60)
+    body = models.TextField()
 
     def StatsLink(self):
         return '<a href="/bm/stats/'+str(self.id)+'">Stats</a>'
