@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.conf import settings
 from django.template import Library
 
 register = Library()
@@ -15,25 +16,20 @@ def ordinal(day):
 
 
 @register.filter
-def age(value):
-    if value:
-        n = datetime.now()
-        d = n - value
-        months = d.days / 31
-        years = d.days / 365
-        if years > 0:
-            return "%s yrs" % years
-        else:
-            return "%s mths" % months
-    else:
-        return ""
-
-@register.filter
-def relativetime(value):
+def ago(value):
     if not value:
         return ""
+    n = None
+    if settings.TIME_ZONE:
+        try:
+            import pytz
+            n = datetime.now(tz=pytz.timezone(str(settings.TIME_ZONE)))
+        except:
+            pass
+    if not n:
+        #fall back to non-timezone now()
+        n = datetime.now()
 
-    n = datetime.now()
     d = n - value
     secs = d.total_seconds()
     #mins

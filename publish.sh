@@ -3,4 +3,4 @@
 
 python setup.py --long-description | rst2html.py > output.html
 
-#python setup.py sdist upload
+python setup.py sdist upload
