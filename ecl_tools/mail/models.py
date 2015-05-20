@@ -15,7 +15,7 @@ class MailMessage(BaseModel):
     subject = models.CharField(max_length=500)
     message = models.TextField()
 
-    status = models.IntegerField(max_length=1, choices=STATUS_CHOICES, default=1)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=1)
     status_details = models.TextField(blank=True, null=True)
 
 
@@ -34,7 +34,7 @@ class SMSMessage(BaseModel):
     to = models.CharField(max_length=10)
     message = models.TextField()
 
-    status = models.IntegerField(max_length=1, choices=STATUS_CHOICES, default=1)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=1)
     status_details = models.TextField(blank=True, null=True)
 
 
