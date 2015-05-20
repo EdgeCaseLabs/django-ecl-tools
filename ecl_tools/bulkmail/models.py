@@ -1,4 +1,5 @@
 import base64
+import os
 import random
 import hashlib
 from datetime import datetime
@@ -9,14 +10,20 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import importlib
 
+from ipware.ip import get_ip
+
 
 imp = importlib.import_module(getattr(settings, "EMAILER", 'ecl_tools.bulkmail.mailers.mailgun'))
 EMailer = imp.EMailer
 
+TEMPLATE_PATH = getattr(settings, "BULKMAIL_TEMPLATE_PATH", '')
+
+def path(file_name):
+    return os.path.join(TEMPLATE_PATH, file_name)
 
 class BaseEmail(object):
-    html_template_name = 'email_template_sample.html'
-    text_template_name = 'email_template_sample.txt'
+    html_template_name = path('email_template_sample.html')
+    text_template_name = path('email_template_sample.txt')
 
     def get_subject(self):
         raise Exception(
@@ -102,22 +109,41 @@ class Subscription(models.Model):
         return self.email
 
 
+class OptinManager(models.Manager):
+    def create(self, request, **kwargs):
+
+        kwargs.update({
+            'skey': Optin.generate_optin_key(),
+            'signup_ip_address': get_ip(request),
+            'signup_uri': request.build_absolute_uri(),
+        })
+
+        return super(OptinManager, self).create(**kwargs)
+
 class Optin(BaseBulkmail, models.Model):
     def __init__(self, *args, **kwargs):
         super(Optin, self).__init__(*args, **kwargs)
 
-        self.html_template_name = "email_optin.html"
-        self.text_template_name = "email_optin.txt"
+        self.html_template_name = path("email_optin.html")
+        self.text_template_name = path("email_optin.txt")
 
 
     email = models.EmailField()
     skey = models.CharField(max_length=255)
+    #this is a human readable tag for tracking general locations for signup
     signup_location = models.CharField(max_length=300, blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True)
 
     bulk_lists = models.ManyToManyField(List)
 
+    signup_ip_address = models.CharField(max_length=100, blank=True, null=True)
+    #this is a URI used for tracking specific locations for signup
+    signup_uri = models.URLField(max_length=300, blank=True, null=True)
+    verified_ip_address = models.CharField(max_length=100, blank=True, null=True)
+    verified = models.DateTimeField(null=True, blank=True)
+
+    objects = OptinManager()
 
     def __unicode__(self):
         return self.email
@@ -157,6 +183,11 @@ class Optin(BaseBulkmail, models.Model):
         emailer.close()
 
         self.sent = datetime.now()
+        self.save()
+
+    def verify(self, request):
+        self.verified_ip_address = get_ip(request)
+        self.verified = datetime.now()
         self.save()
 
     @staticmethod

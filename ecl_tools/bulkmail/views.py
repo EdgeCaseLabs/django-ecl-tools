@@ -7,6 +7,7 @@ from django import http
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
@@ -159,16 +160,27 @@ def signup_verify(request):
     email = request.GET.get('email', '')
     skey = request.GET.get('skey', '')
     old = datetime.now() - timedelta(days=10)
-    optin = get_object_or_404(Optin, skey=skey, email=email, created__gte=old)
     blists = []
-    for l in optin.bulk_lists.all():
-        if Subscription.subscribed.filter(email__iexact=optin.email, bulk_list=l).count() == 0:
-            s = Subscription(email=optin.email, signup_location=optin.signup_location, bulk_list=l)
-            s.save()
+    try:
+        optin = Optin.objects.get(skey=skey, email=email, created__gte=old)
+        for l in optin.bulk_lists.all():
+            if Subscription.subscribed.filter(email__iexact=optin.email, bulk_list=l).count() == 0:
+                s = Subscription(email=optin.email, signup_location=optin.signup_location, bulk_list=l)
+                s.save()
 
-        blists.append(l)
+            blists.append(l)
 
-    optin.delete()
+        optin.verify(request)
+    except Optin.DoesNotExist:
+        #they've already subscribed; let's show them that instead of a 404
+        #this prevents emails like "my link isn't working" after they've already clicked it once
+        subs = Subscription.objects.filter(email=email)
+        if len(subs):
+            for sub in subs:
+                blists.append(sub.bulk_list)
+        else:
+            raise Http404
+
     c = {'lists': blists}
     return TemplateResponse(request, 'signup_verified.html', c)
 

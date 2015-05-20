@@ -25,9 +25,10 @@ class SubscribedFilter(SimpleListFilter):
 
 class OptinAdmin(admin.ModelAdmin):
     list_display = ('email', 'signup_location', 'created')
-    list_filter = ('signup_location',)
+    list_filter = ('signup_location', 'signup_uri',)
     date_hierarchy = 'created'
     search_fields = ('email',)
+    readonly_fields = ('created',)
 
 
 class ListAdmin(admin.ModelAdmin):
