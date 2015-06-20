@@ -9,7 +9,7 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 
 
-def get_backup_settings(prefix='backup', defaults=dict()):
+def get_backup_settings(prefix='backup'):
 
     s = dict()
 
@@ -32,7 +32,7 @@ def get_backup_settings(prefix='backup', defaults=dict()):
 
     s.update({'BACKUP_BUCKET_NAME': BACKUP_BUCKET_NAME})
 
-    BACKUP_PATH = getattr(settings, 'BACKUP_PATH', '')
+    BACKUP_PATH = getattr(settings, 'BACKUP_PATH', None)
     if not BACKUP_PATH:
         BACKUP_PATH = ''
     elif BACKUP_PATH[-1:] != '/':
@@ -40,10 +40,8 @@ def get_backup_settings(prefix='backup', defaults=dict()):
 
     s.update({'BACKUP_PATH': BACKUP_PATH})
 
-    TEMP_PATH = getattr(settings, 'TEMP_PATH', '')
-    if not TEMP_PATH:
-        TEMP_PATH = '/tmp'
-    elif TEMP_PATH[-1:] != '/':
+    TEMP_PATH = getattr(settings, 'TEMP_PATH', '/tmp')
+    if TEMP_PATH[-1:] != '/':
         TEMP_PATH = TEMP_PATH + '/'
 
     s.update({'TEMP_PATH': TEMP_PATH})
@@ -59,9 +57,6 @@ def get_backup_settings(prefix='backup', defaults=dict()):
     s.update({'tmp_filename': '%s_%s.sql' % (s['dbname'], prefix)})
     s.update({'tmp_file': lambda: os.path.join(s['TEMP_PATH'], s['tmp_filename'])})
     s.update({'tmp_zip_file': lambda: os.path.join(s['TEMP_PATH'], s['tmp_filename'] + '.gz')})
-
-
-    s.update(**defaults)
 
 
     if os.path.exists(s['tmp_file']()):

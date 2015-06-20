@@ -74,7 +74,7 @@ class Command(BaseCommand):
                 auto_seek = False
                 settings_prefix = 'sync_%s' % day
 
-        s = get_backup_settings(settings_prefix, defaults={'TEMP_PATH': '/tmp'})
+        s = get_backup_settings(settings_prefix)
 
         if len(args) > 0:
             download_db_name = args[0]
